@@ -190,6 +190,7 @@ const result = vm.runInContext(`(() => {
   setGather(worker, tree);
   for (let i = 0; i < 450; i++) updateGame(STEP);
   const gatheredWood = game.player.res.wood - woodBefore;
+  const gatherActivity=unitActivityState(worker),gatherTarget=entityById(worker.order.targetId),gatherFacingError=gatherTarget?Math.abs(Math.atan2(Math.sin(worker.angle-Math.atan2(gatherTarget.y-worker.y,gatherTarget.x-worker.x)),Math.cos(worker.angle-Math.atan2(gatherTarget.y-worker.y,gatherTarget.x-worker.x)))):Infinity;
 
   let buildPoint = null;
   for (let y = 1200; y < 1800 && !buildPoint; y += 60) for (let x = 240; x < 900; x += 60) {
@@ -198,12 +199,17 @@ const result = vm.runInContext(`(() => {
   if (!buildPoint) throw new Error('找不到測試建築位置');
   const house = createBuilding('house', 0, buildPoint.x, buildPoint.y, 0);
   setBuild(worker, house);
-  for (let i = 0; i < 600 && house.construction < 1; i++) updateGame(STEP);
+  for (let i = 0; i < 1200 && !unitActivityState(worker).active; i++) updateGame(STEP);
+  const buildActivity=unitActivityState(worker),constructionBeforeWork=house.construction,constructionState=buildingProgressStates(house)[0];
+  for (let i = 0; i < 20 && house.construction < 1; i++) updateGame(STEP);
+  const constructionGrew=house.construction>constructionBeforeWork,buildFacingError=Math.abs(Math.atan2(Math.sin(worker.angle-Math.atan2(house.y-worker.y,house.x-worker.x)),Math.cos(worker.angle-Math.atan2(house.y-worker.y,house.x-worker.x))));
+  for (let i = 0; i < 1200 && house.construction < 1; i++) updateGame(STEP);
 
   const town = game.entities.find(entity => entity.faction === 0 && entity.type === 'town');
   game.player.res.food += 500;
   const popBeforeTraining = game.player.pop;
   if (!queueUnit(town, 'villager', true)) throw new Error('無法加入訓練佇列');
+  const trainingState=buildingProgressStates(town).find(state=>state.kind==='training');
   for (let i = 0; i < 480; i++) updateGame(STEP);
   const popAfterTraining = game.player.pop;
 
@@ -301,6 +307,19 @@ const result = vm.runInContext(`(() => {
   const idleAnimated = animation.every(({ranges,finite}) => finite && ranges.bob>1 && ranges.breath>.04 && ranges.headTurn>.18 && ranges.arm>.3 && ranges.reducedBob>.25)
     && animation.find(a=>a.type==='cavalry').ranges.tail>.5
     && animation.find(a=>a.type==='catapult').ranges.crew>.35;
+  const actionRange=(samples,key)=>Math.max(...samples.map(p=>p[key]))-Math.min(...samples.map(p=>p[key]));
+  const actionCase=(name,orderType,moving,reduce=false)=>{const unit={id:9800+name.length,type:'villager',path:moving?[{x:1,y:1}]:[],order:{type:orderType}},samples=Array.from({length:81},(_,i)=>unitIdlePose(unit,8+i*.05,reduce));return{name,moving,reduce,ranges:{bob:actionRange(samples,'bob'),foot:actionRange(samples,'foot'),work:actionRange(samples,'work'),attack:actionRange(samples,'attack'),gear:actionRange(samples,'gear'),lunge:actionRange(samples,'lunge')},finite:samples.every(p=>Object.values(p).every(value=>typeof value!=='number'||Number.isFinite(value)))}};
+  const actionAnimation=[actionCase('move','move',true),actionCase('attackMove','attackMove',true),actionCase('attack','attack',false),actionCase('gather','gather',false),actionCase('build','build',false),actionCase('gatherReduced','gather',false,true),actionCase('moveReduced','move',true,true)];
+  const actionAnimated=actionAnimation.every(item=>item.finite)
+    &&actionAnimation.filter(item=>item.moving&&!item.reduce).every(item=>item.ranges.foot>7&&item.ranges.bob>2)
+    &&actionAnimation.filter(item=>['gather','build'].includes(item.name)).every(item=>item.ranges.work>1.8&&item.ranges.gear>1.4&&item.ranges.lunge>5)
+    &&actionAnimation.find(item=>item.name==='attack').ranges.attack>1.8
+    &&actionAnimation.find(item=>item.name==='gatherReduced').ranges.work>.5
+    &&actionAnimation.find(item=>item.name==='moveReduced').ranges.foot>2;
+  const savedAgeUp=p.ageUp;p.ageUp={to:4,remaining:35,total:70};const ageProgressState=buildingProgressStates(game.entities.find(e=>e.faction===0&&e.type==='town')).find(state=>state.kind==='age');p.ageUp=savedAgeUp;
+  const wonder=createBuilding('wonder',0,game.spawn[0].x+420,game.spawn[0].y-360,1);wonder.wonderTimer=45;const wonderProgressState=buildingProgressStates(wonder).find(state=>state.kind==='wonder');
+  const captureProgressState=siteProgressState({captureBy:0,progress:3,contested:false}),contestedProgressState=siteProgressState({captureBy:0,progress:3,contested:true});
+  const progressStates={construction:constructionState,training:trainingState,age:ageProgressState,wonder:wonderProgressState,capture:captureProgressState,contested:contestedProgressState};
 
   const anchor={x:game.spawn[0].x+70,y:game.spawn[0].y-70};
   const tower=createBuilding('tower',0,anchor.x,anchor.y,1),back=createUnit('spear',0,anchor.x,anchor.y),front=createUnit('archer',0,anchor.x,anchor.y);
@@ -317,7 +336,8 @@ const result = vm.runInContext(`(() => {
     lowZoomPick,
     minimumHitRadius:Math.min(unitScreenHitRadius(back),unitScreenHitRadius(front)),
   };
-  const visibility={idleAnimated,animation,selection,fullscreenEntered,fullscreenExited};
+  const renderWorker=game.entities.find(e=>e.faction===0&&e.type==='villager'),renderTarget=nearestResource(renderWorker,'wood');renderWorker.x=renderTarget.x-renderTarget.radius-renderWorker.radius-2;renderWorker.y=renderTarget.y;setGather(renderWorker,renderTarget);renderWorker.path=[];renderWorker.angle=Math.atan2(renderTarget.y-renderWorker.y,renderTarget.x-renderWorker.x);updateFog(true);let renderSmoke=true;try{render(.5)}catch(error){renderSmoke=String(error?.stack||error);}
+  const visibility={idleAnimated,actionAnimated,animation,actionAnimation,selection,fullscreenEntered,fullscreenExited,renderSmoke};
   const effectsFallback={api:typeof EmpireFX==='object'&&typeof EmpireFX.setEnabled==='function'&&typeof EmpireFX.resize==='function',available:!!EmpireFX?.available};
   const generatedArtFallback={
     api:typeof GeneratedArt==='object'&&['getUnitSprite','getBuildingSprite','getEnvironmentSprite','getEffectSprite','preload','atlasState'].every(key=>typeof GeneratedArt[key]==='function'),
@@ -332,7 +352,7 @@ const result = vm.runInContext(`(() => {
     openingCameraInput,
     restoredCameraInput,
     afterSimulation: restoredState,
-    economy: { gatheredWood: Math.round(gatheredWood * 10) / 10, houseComplete: house.construction === 1, popBeforeTraining, popAfterTraining },
+    economy: { gatheredWood: Math.round(gatheredWood * 10) / 10, houseComplete: house.construction === 1, popBeforeTraining, popAfterTraining, gatherActive:gatherActivity.active&&gatherActivity.resource==='wood',gatherFacingError,buildActive:buildActivity.active&&buildActivity.kind==='build',buildFacingError,constructionGrew },
     combat: { cavalryDefeated: cavalry.dead },
     saveVersion: snapshot.v,
     migration,
@@ -344,6 +364,7 @@ const result = vm.runInContext(`(() => {
     roster,
     progressionData,
     progression,
+    progressStates,
     multi,
     tutorial,
     visibility,
@@ -355,7 +376,7 @@ const result = vm.runInContext(`(() => {
 if (result.initial.sites !== 3 || result.initial.popCap !== 15 || result.initial.players !== 2) throw new Error('初始戰局狀態錯誤');
 if (!result.openingCameraInput.anchorCentered || !result.openingCameraInput.initiallyOutside || !result.openingCameraInput.stationaryBeforeEntry || !result.openingCameraInput.edgeScrollAfterEntry || !result.openingCameraInput.keyboardPan || !result.openingCameraInput.rightDragPan) throw new Error('開局鏡頭錨點、游標進入後邊緣平移、鍵盤或右鍵拖曳驗證失敗');
 if (!result.restoredCameraInput.anchorCentered || !result.restoredCameraInput.initiallyOutside || !result.restoredCameraInput.stationaryBeforeEntry) throw new Error('復原存檔後的鏡頭輸入未重新置中');
-if (result.economy.gatheredWood <= 0 || !result.economy.houseComplete || result.economy.popAfterTraining <= result.economy.popBeforeTraining) throw new Error('經濟或生產流程錯誤');
+if (result.economy.gatheredWood <= 0 || !result.economy.houseComplete || result.economy.popAfterTraining <= result.economy.popBeforeTraining || !result.economy.gatherActive || !result.economy.buildActive || !result.economy.constructionGrew || result.economy.gatherFacingError>1e-6 || result.economy.buildFacingError>1e-6) throw new Error('經濟、生產、村民工作狀態或面向目標流程錯誤');
 if (!result.combat.cavalryDefeated) throw new Error('兵種戰鬥流程錯誤');
 if (result.saveVersion !== 4 || !result.restoredPaused) throw new Error('第四版存檔往返驗證失敗');
 if (result.migration.civ !== 'chinese' || result.migration.chosenCiv !== 'chinese' || result.migration.projection !== 'topdown-v1' || result.migration.unit !== 'chuKoNu' || !result.migration.allCivsValid || result.migration.nextSaveVersion !== 4) throw new Error('第三版文明或投影存檔遷移失敗');
@@ -368,11 +389,12 @@ if (JSON.stringify(result.progressionData.ages)!==JSON.stringify(['黑暗時代'
 const expectedTiers={town:1,house:1,mill:1,lumber:1,farm:1,barracks:1,range:2,stable:2,blacksmith:2,tower:2,wall:2,workshop:3,castle:3,wonder:4};
 if (JSON.stringify(result.progressionData.tiers)!==JSON.stringify(expectedTiers) || !Object.keys(expectedTiers).slice(1).every(type=>result.progressionData.buildOrder.includes(type))) throw new Error('《帝王世紀 II》式建築時代分層不完整');
 if (!result.progression.darkInitiallyBlocked || !result.progression.darkAfterMillStillBlocked || !result.progression.feudalReady || !result.progression.castleInitiallyBlocked || !result.progression.castleStillNeedsMilitary || !result.progression.castleReady || !result.progression.imperialInitiallyBlocked || !result.progression.imperialReady || !result.progression.farmNeedsMill || !result.progression.farmUnlocked || !result.progression.rangeNeedsBarracks || !result.progression.rangeAndStableUnlocked || !result.progression.workshopNeedsBlacksmith || !result.progression.castleBuildingsUnlocked || !result.progression.uniqueTraining.queued || result.progression.uniqueTraining.queueType!==result.progression.uniqueTraining.type || result.progression.uniqueTraining.age!==3 || result.progression.uniqueTraining.trainAt!=='castle') throw new Error('時代前置、建築前置或城堡特色單位生產流程錯誤');
+if (result.progressStates.construction?.kind!=='construction' || result.progressStates.training?.kind!=='training' || result.progressStates.age?.kind!=='age' || result.progressStates.wonder?.kind!=='wonder' || result.progressStates.capture?.kind!=='capture' || result.progressStates.contested?.kind!=='contested' || !Object.values(result.progressStates).every(state=>Number.isFinite(state?.ratio)&&state.ratio>=0&&state.ratio<=1)) throw new Error('施工、生產、晉升、奇觀或據點進度狀態不完整');
 if (result.multi.players !== 4 || result.multi.spawns !== 4 || result.multi.factions !== 4 || result.multi.civs !== 4) throw new Error('四方混戰初始化失敗');
 if (!result.tutorial.active || result.tutorial.lessons < 12 || result.tutorial.step !== 1) throw new Error('新手教學未正確初始化');
-if (!result.visibility.idleAnimated || !result.visibility.selection.unitFirst || !result.visibility.selection.cycled || !result.visibility.selection.lowZoomReach || result.visibility.selection.minimumHitRadius < 20 || !result.visibility.fullscreenEntered || !result.visibility.fullscreenExited) {
+if (!result.visibility.idleAnimated || !result.visibility.actionAnimated || result.visibility.renderSmoke!==true || !result.visibility.selection.unitFirst || !result.visibility.selection.cycled || !result.visibility.selection.lowZoomReach || result.visibility.selection.minimumHitRadius < 20 || !result.visibility.fullscreenEntered || !result.visibility.fullscreenExited) {
   console.error(JSON.stringify(result.visibility, null, 2));
-  throw new Error('生動待機動畫、單位優先重疊選取或全螢幕處理失敗');
+  throw new Error('生動待機／工作動畫、單位對比渲染、單位優先重疊選取或全螢幕處理失敗');
 }
 if (!result.effectsFallback.api || result.effectsFallback.available) throw new Error('WebGL2 不可用時未安全保留 Canvas 後備路徑');
 if (!result.generatedArtFallback.api || result.generatedArtFallback.units !== 22 || result.generatedArtFallback.buildings !== 14 || result.generatedArtFallback.environment !== 8 || result.generatedArtFallback.effects !== 16 || !result.generatedArtFallback.noImageSafe) throw new Error('Imagegen 圖集 API、對應數量或無 Image 環境後備路徑錯誤');

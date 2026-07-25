@@ -91,6 +91,11 @@ for (const type of expectedBuildings) if (!new RegExp(`\\b${type}:\\{atlas:`).te
 if (!generatedArtSource.includes('getEnvironmentSprite') || !generatedArtSource.includes('getEffectSprite') || !generatedArtSource.includes("typeof root.Image!=='function'")) throw new Error('Imagegen 場景／特效 API 或離線後備不完整');
 const renderSource = read('js/render.js');
 if (!renderSource.includes('GeneratedArt.getUnitSprite') || !renderSource.includes("generatedArtSprite('getBuildingSprite'") || !renderSource.includes("generatedArtSprite('getEnvironmentSprite'") || !renderSource.includes("generatedArtSprite('getEffectSprite'") || !renderSource.includes("globalCompositeOperation='screen'")) throw new Error('戰場未完整採用 Imagegen 單位、建築、場景與特效圖集');
+const activityRequirements = ['function unitActivityState','function buildingProgressStates','function siteProgressState','function indexFrameActivity','function drawTargetWorkFeedback','function drawVillagerWorkTool','function drawUnitGrounding','function drawProgressOverlays'];
+for (const requirement of activityRequirements) if (!joinedJs.includes(requirement)) throw new Error(`缺少進行中狀態或可讀性動畫：${requirement}`);
+if (!renderSource.includes('drop-shadow(0 2px 1px') || !renderSource.includes("ctx.strokeStyle='rgba(0,0,0,.92)'" ) || !renderSource.includes('ctx.strokeStyle=team') || !/drawFog\(\);drawCombatFeedback\([^)]+\);drawProgressOverlays/.test(renderSource)) throw new Error('單位缺少背景分離輪廓，或進度提示未置於迷霧後的受控覆疊層');
+if (!/function drawProgressOverlays[\s\S]{0,1800}visibleAt\(e\.x,e\.y\)/.test(renderSource)) throw new Error('進度覆疊未以可見性檢查防止迷霧資訊洩漏');
+if (!renderSource.includes("resource==='wood'") || !renderSource.includes("resource==='gold'||resource==='stone'") || !renderSource.includes("resource==='food'") || !renderSource.includes("state.kind==='build'")) throw new Error('村民伐木、採礦、採食或施工工具動畫不完整');
 const webglSource = read('js/webgl-effects.js');
 const hudSource = read('css/hud.css');
 if (!html.includes('id="worldFx"') || !scripts.includes('js/webgl-effects.js') || !webglSource.includes("getContext('webgl2'") || !webglSource.includes('globalThis.EmpireFX') || !webglSource.includes('uVisibility') || !webglSource.includes('pointVisible(activeGame') || !/#worldFx\{[^}]*pointer-events:none/.test(hudSource)) throw new Error('缺少不攔截操作且遵守戰爭迷霧的可選 WebGL2 特效層');
@@ -119,6 +124,8 @@ console.log(JSON.stringify({
   rightDragPan: true,
   tutorialMode: true,
   animatedIdleUnits: true,
+  animatedProgressStates: true,
+  highContrastUnits: true,
   overlapSelection: true,
   optionalWebGL2Effects: true,
   imagegenAtlases: generatedAssets.length + 1,
