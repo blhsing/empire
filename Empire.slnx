@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="src/Empire.Core/Empire.Core.csproj" />
+  <Project Path="src/Empire.Game/Empire.Game.csproj" />
+  <Project Path="tests/Empire.Core.Smoke/Empire.Core.Smoke.csproj" />
+</Solution>

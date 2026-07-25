@@ -13,3 +13,11 @@ Desktop.ini
 
 # 玩家匯出的本機戰局
 帝國餘燼-存檔-*.json
+
+# .NET／MonoGame 建置輸出
+**/bin/
+**/obj/
+artifacts/
+.vs/
+*.user
+*.suo
