@@ -1,0 +1,57 @@
+:root{
+      --ink:#0b1118;--panel:rgba(16,25,35,.94);--panel2:rgba(24,38,52,.92);
+      --bronze:#caa85e;--bronze2:#8b6633;--paper:#f5ecd6;--muted:#b9c5c9;
+      --good:#70ca89;--bad:#ef746a;--blue:#68b9d2;--shadow:rgba(0,0,0,.58);
+      --hero-image:url('../assets/empire-dawn.jpg');
+    }
+    *{box-sizing:border-box}
+    html,body{width:100%;height:100%;margin:0;overflow:hidden;background:#071018;color:var(--paper);font-family:"Microsoft JhengHei","PingFang TC","Noto Sans TC",sans-serif;font-size:16px}
+    button,input,select{font:inherit;color:inherit}
+    button{border:0}
+    button:focus-visible,[tabindex]:focus-visible{outline:3px solid #f6d780;outline-offset:2px}
+    .hidden{display:none!important}
+    .screen{position:fixed;inset:0}
+
+    /* 主選單 */
+    #menu{z-index:50;display:grid;place-items:center;overflow:auto;background:
+      radial-gradient(circle at 50% 22%,transparent 0 20%,rgba(5,10,14,.16) 55%,rgba(3,8,12,.82) 100%),
+      linear-gradient(90deg,rgba(3,8,12,.78),rgba(3,8,12,.18) 52%,rgba(3,8,12,.72)),var(--hero-image) center/cover no-repeat}
+    #menu::before{content:"";position:fixed;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(2,6,9,.2),transparent 35%,rgba(2,6,9,.88));box-shadow:inset 0 0 120px #020609}
+    .menu-wrap{position:relative;width:min(1220px,calc(100% - 32px));padding:24px 0 30px;display:grid;gap:14px;z-index:1}
+    .brand{text-align:center;text-shadow:0 3px 18px #000}
+    .brand-mark{display:inline-flex;align-items:center;gap:13px;color:#e0bd6b;font-size:14px;letter-spacing:.28em;margin-bottom:3px}
+    .brand-mark::before,.brand-mark::after{content:"";width:72px;height:1px;background:linear-gradient(90deg,transparent,#e0bd6b)}
+    .brand-mark::after{transform:scaleX(-1)}
+    h1{font-family:"Noto Serif TC","PMingLiU",serif;font-size:clamp(42px,6vw,78px);line-height:1;margin:0;letter-spacing:.14em;color:#f6ead0;background:linear-gradient(#fff6dc,#d4aa55 74%,#876126);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 4px 1px #160f06)}
+    .tagline{margin:10px auto 0;color:#e4ddce;font-size:15px;letter-spacing:.28em}
+    .menu-panel{min-height:0;background:linear-gradient(145deg,rgba(14,24,33,.9),rgba(7,14,21,.96));border:1px solid rgba(211,175,97,.55);box-shadow:0 18px 70px rgba(0,0,0,.55),inset 0 0 0 1px rgba(255,255,255,.035);border-radius:7px;padding:13px 14px 14px;backdrop-filter:blur(12px)}
+    .section-kicker{display:flex;align-items:center;gap:12px;margin:0 0 12px;color:#d7b66e;font-size:13px;letter-spacing:.15em}
+    .section-kicker::after{content:"";height:1px;flex:1;background:linear-gradient(90deg,rgba(215,182,110,.45),transparent)}
+    .civilizations{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;max-height:min(44vh,430px);overflow-y:auto;overscroll-behavior:contain;scrollbar-gutter:stable;padding:2px 8px 4px 2px;scrollbar-color:#9b773f rgba(4,9,14,.56);scrollbar-width:thin}
+    .civilizations::-webkit-scrollbar{width:10px}.civilizations::-webkit-scrollbar-track{background:rgba(4,9,14,.56);border-radius:8px}.civilizations::-webkit-scrollbar-thumb{background:linear-gradient(#c09a54,#74512d);border:2px solid #111c24;border-radius:8px}
+    .civ-card{position:relative;min-height:184px;padding:11px 12px 10px;display:flex;flex-direction:column;text-align:left;border:1px solid rgba(255,255,255,.1);border-radius:5px;background:linear-gradient(160deg,rgba(44,58,66,.9),rgba(14,22,30,.97));cursor:pointer;overflow:hidden;transition:.2s transform,.2s border-color,.2s box-shadow,.2s background}
+    .civ-card::after{content:"";position:absolute;right:-38px;top:-42px;width:120px;height:120px;border:1px solid currentColor;opacity:.13;transform:rotate(45deg)}
+    .civ-card:hover{transform:translateY(-2px);border-color:rgba(231,199,126,.72);box-shadow:0 8px 20px rgba(0,0,0,.38)}
+    .civ-card.active{border-color:#efd27d;box-shadow:0 0 0 2px rgba(239,210,125,.18),0 8px 24px rgba(0,0,0,.42);background:linear-gradient(160deg,rgba(74,71,53,.94),rgba(15,24,32,.99))}
+    .civ-card.active::before{content:"";position:absolute;inset:7px auto 7px 0;width:3px;border-radius:0 3px 3px 0;background:#efd27d;box-shadow:0 0 10px #efd27d}
+    .civ-head{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+    .civ-seal{width:38px;height:38px;flex:0 0 38px;border:1px solid currentColor;border-radius:50%;display:grid;place-items:center;font-family:"PMingLiU",serif;font-size:19px;background:rgba(0,0,0,.25);box-shadow:inset 0 0 10px rgba(0,0,0,.42),0 0 12px color-mix(in srgb,currentColor 18%,transparent)}
+    .civ-card h2{font-family:"Noto Serif TC","PMingLiU",serif;font-size:16px;margin:0 0 1px;letter-spacing:.04em}
+    .civ-style{font-size:12px;color:var(--muted)}
+    .trait{display:block;font-size:12px;line-height:1.42;margin:3px 0;padding-left:17px;position:relative;color:#dbe4e4}
+    .trait::before{position:absolute;left:0;top:0;font-weight:700}
+    .trait.pro::before{content:"＋";color:var(--good)} .trait.con::before{content:"−";color:var(--bad)}
+    .civ-power{display:block;margin-top:auto;padding-top:7px;border-top:1px solid rgba(255,255,255,.09);font-size:12px;line-height:1.4;color:#e5c879}
+    .match-options{display:grid;grid-template-columns:1fr 1fr;gap:8px 12px;padding:10px 12px;background:rgba(4,10,15,.72);border:1px solid rgba(202,168,94,.35);border-radius:5px;backdrop-filter:blur(8px)}
+    .option-group{display:flex;align-items:center;gap:7px;min-width:0}
+    .option-label{min-width:72px;color:#d8c69e;font-size:13px;letter-spacing:.08em}
+    .option-group button,.small-btn{min-height:40px;padding:0 14px;border:1px solid rgba(255,255,255,.14);background:rgba(40,51,59,.8);border-radius:3px;cursor:pointer;font-size:13px;transition:.18s}
+    .option-group button:hover,.small-btn:hover{background:#364854}.option-group button.active{background:linear-gradient(#a17a3e,#6d4b28);border-color:#e3bc68;color:white;box-shadow:inset 0 0 0 1px rgba(255,226,153,.15)}
+    .match-hint{grid-column:1/-1;padding:7px 10px;border-left:2px solid #caa85e;background:rgba(202,168,94,.07);color:#bbc8ca;font-size:12px;line-height:1.5}
+    .menu-actions{display:flex;gap:12px;align-items:stretch;justify-content:flex-end}
+    .launch-actions{display:flex;gap:8px;align-items:stretch}
+    .launch-actions .small-btn{min-width:110px;background:rgba(24,39,49,.9);border-color:rgba(226,190,109,.48)}
+    .launch-actions .tutorial-launch{border-color:#77c8bd;background:linear-gradient(#28565a,#173b43);color:#dffaf4}
+    #startBtn{min-width:245px;padding:0 28px;cursor:pointer;border:1px solid #f0ce78;border-radius:4px;background:linear-gradient(#d0a858,#8a5c28);box-shadow:inset 0 1px rgba(255,255,255,.38),0 7px 22px rgba(0,0,0,.4);font-family:"Noto Serif TC","PMingLiU",serif;font-size:20px;letter-spacing:.18em;text-shadow:0 2px #4c2a0b;transition:.2s}
+    #startBtn:hover{filter:brightness(1.13);transform:translateY(-2px)}
+    .menu-foot{text-align:center;color:#b9c2c2;font-size:12px;text-shadow:0 2px 6px #000}

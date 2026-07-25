@@ -1,0 +1,15 @@
+# Codex／本機工作資料
+.agents/
+
+# 編輯器與作業系統雜項
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+Desktop.ini
+*.swp
+*.tmp
+*.log
+
+# 玩家匯出的本機戰局
+帝國餘燼-存檔-*.json

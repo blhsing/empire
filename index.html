@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+  <meta name="color-scheme" content="dark">
+  <meta name="description" content="帝國餘燼：十三個《帝王世紀》風格歷史文明交鋒的完全離線繁體中文即時戰略遊戲。">
+  <title>帝國餘燼：百族爭霸</title>
+  <link rel="icon" type="image/png" href="assets/empire-icon.png">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/hud.css">
+  <link rel="stylesheet" href="css/overlays-responsive.css">
+</head>
+<body>
+  <main id="menu" class="screen">
+    <div class="menu-wrap">
+      <header class="brand">
+        <div class="brand-mark">離線即時戰略</div>
+        <h1>帝國餘燼</h1>
+        <p class="tagline">十三歷史文明 · 帝王世紀式征戰 · 一念興亡</p>
+      </header>
+      <section class="menu-panel" aria-labelledby="civHeading">
+        <div id="civHeading" class="section-kicker">選擇歷史文明</div>
+        <div id="civCards" class="civilizations"></div>
+      </section>
+      <div class="match-options" aria-label="對戰設定">
+        <div class="option-group" role="group" aria-label="選擇電腦難度">
+          <span class="option-label">電腦難度</span>
+          <button type="button" data-diff="休閒">休閒</button>
+          <button type="button" class="active" data-diff="征戰">征戰</button>
+          <button type="button" data-diff="霸主">霸主</button>
+          <button type="button" data-diff="天命">天命</button>
+        </div>
+        <div class="option-group" role="group" aria-label="選擇玩家總數">
+          <span class="option-label">玩家總數</span>
+          <button type="button" class="active" data-players="2">2 人</button>
+          <button type="button" data-players="3">3 人</button>
+          <button type="button" data-players="4">4 人</button>
+          <button id="guideBtn" type="button" class="small-btn">玩法指南</button>
+        </div>
+        <div id="matchHint" class="match-hint">征戰：均衡的決策速度與攻勢，適合熟悉即時戰略的玩家。</div>
+      </div>
+      <div class="menu-actions">
+        <div class="launch-actions">
+          <button id="continueBtn" type="button" class="small-btn hidden">繼續戰局</button>
+          <button id="menuImportBtn" type="button" class="small-btn">匯入存檔</button>
+          <button id="tutorialBtn" type="button" class="small-btn tutorial-launch">新手教學</button>
+          <button id="startBtn" type="button">點火出征</button>
+        </div>
+      </div>
+      <div class="menu-foot">完全離線 · 原創程式繪圖與動態音樂 · 建議使用 Chrome 全螢幕遊玩</div>
+    </div>
+  </main>
+
+  <section id="game" class="screen hidden" aria-label="帝國餘燼遊戲戰場">
+    <canvas id="world" aria-label="即時戰略遊戲地圖"></canvas>
+    <canvas id="worldFx" aria-hidden="true"></canvas>
+    <div class="vignette"></div>
+    <div id="hud">
+      <header id="topbar">
+        <div id="resourceRow" class="resource-row"></div>
+        <div class="top-center"><span id="ageLabel" class="age-badge">黑暗時代</span><span id="clock" class="clock">00:00</span><span id="civHud" class="clock"></span></div>
+        <div class="top-actions">
+          <button id="abilityBtn" class="icon-btn" type="button" title="文明軍令">軍令</button>
+          <button id="speedBtn" class="icon-btn" type="button" title="調整遊戲速度">1×</button>
+          <button id="muteBtn" class="icon-btn" type="button" title="切換聲音">聲音</button>
+          <button id="fullscreenBtn" class="icon-btn" type="button" title="切換全螢幕">全螢幕</button>
+          <button id="pauseBtn" class="icon-btn" type="button" title="暫停（空白鍵）">暫停</button>
+        </div>
+      </header>
+      <aside id="objectivePanel">
+        <h3>戰局目標</h3>
+        <div id="objectiveText" class="objective-line"><span>摧毀敵方城鎮中心</span><b>0／1</b></div>
+        <div id="supremacyText" class="objective-line"><span>王旗據點</span><b>0／3</b></div>
+        <div class="progress"><i id="supremacyBar"></i></div>
+      </aside>
+      <aside id="tutorialPanel" class="tutorial-panel hidden" aria-live="polite">
+        <div class="tutorial-progress"><span id="tutorialStep">教學 1／13</span><i id="tutorialProgress"></i></div>
+        <h3 id="tutorialTitle">巡視領地</h3>
+        <p id="tutorialBody">按住滑鼠右鍵拖曳戰場，熟悉清晰的 2D 俯視視野。</p>
+        <div id="tutorialHint" class="tutorial-hint">目標：向任意方向平移地圖</div>
+        <div class="tutorial-actions"><button id="tutorialSkipBtn" type="button" class="small-btn">略過此步</button><button id="tutorialEndBtn" type="button" class="small-btn">結束教學</button></div>
+      </aside>
+      <div id="notifications" aria-live="polite"></div>
+      <div id="buildHint" class="hidden">選擇建造位置 · 左鍵確認 · 右鍵取消</div>
+      <footer id="bottomBar">
+        <section id="selectionPanel" class="hud-panel"></section>
+        <section id="commandsPanel" class="hud-panel"><div id="commandGrid" class="command-grid"></div><div id="queueInfo" class="queue-info"></div></section>
+        <section id="minimapWrap" class="hud-panel"><canvas id="minimap" aria-label="戰場小地圖"></canvas><div class="minimap-legend"><span><i class="mini-dot you"></i>我軍</span><span><i class="mini-dot foe"></i>敵軍</span><span><i class="mini-dot site"></i>王旗</span></div></section>
+      </footer>
+      <div id="touchControls"><button id="touchSelect" class="touch-btn" type="button">框選</button><button id="touchCommand" class="touch-btn" type="button">下令</button></div>
+      <div id="tooltip" class="hidden"></div>
+    </div>
+  </section>
+
+  <div id="pauseOverlay" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="pauseTitle">
+    <div class="dialog">
+      <h2 id="pauseTitle">戰局暫歇</h2><div class="sub" id="pauseSummary">烽火未熄，軍令仍待。</div>
+      <div class="settings-row"><label for="volumeRange">主音量</label><input id="volumeRange" type="range" min="0" max="100" value="72"></div>
+      <div class="settings-row"><span>動態效果</span><button id="motionBtn" class="small-btn" type="button">完整</button></div>
+      <div class="dialog-actions">
+        <button id="resumeBtn" class="dialog-btn primary" type="button">返回戰場</button>
+        <button id="saveBtn" class="dialog-btn" type="button">儲存戰局</button>
+        <button id="loadBtn" class="dialog-btn" type="button">載入戰局</button>
+        <button id="exportBtn" class="dialog-btn" type="button">匯出存檔</button>
+        <button id="importBtn" class="dialog-btn" type="button">匯入存檔</button>
+        <button id="restartBtn" class="dialog-btn" type="button">重新開局</button>
+        <button id="menuBtn" class="dialog-btn" type="button">返回主選單</button>
+        <button id="helpInGameBtn" class="dialog-btn" type="button">檢視指南</button>
+      </div>
+      <input id="saveFileInput" class="hidden" type="file" accept="application/json,.json" aria-label="選擇帝國餘燼存檔">
+    </div>
+  </div>
+
+  <div id="guideOverlay" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="guideTitle">
+    <div class="dialog">
+      <h2 id="guideTitle">統御指南</h2><div class="sub">採集、擴張、組軍，奪下三座王旗或摧毀敵方城鎮中心。</div>
+      <div class="guide-grid">
+        <div class="guide-card"><strong>視角、選取與下令</strong>純 2D 俯視戰場讓單位位置一目了然。按住滑鼠右鍵拖曳平移地圖；快速按一下右鍵可移動、攻擊或採集。左鍵點選或拖曳框選，重疊單位可連續點按切換，Shift 可追加選取；中鍵不使用。</div>
+        <div class="guide-card"><strong>經營帝國</strong>村民採集食物、木材、黃金與石材。磨坊解鎖農田，軍營解鎖靶場與馬廄，鐵匠鋪則通往攻城工坊與城堡。</div>
+        <div class="guide-card"><strong>戰術剋制</strong>長槍兵克制騎兵，弓兵壓制步兵，騎兵追擊弓兵，攻城車摧毀建築。</div>
+        <div class="guide-card"><strong>快捷操作</strong>右鍵拖曳或 WASD 移動視角，滾輪縮放，空白鍵暫停；頂列可切換全螢幕。A 攻擊移動，S 停止，F 發動文明軍令。</div>
+        <div class="guide-card"><strong>編隊與視角</strong>Ctrl＋1～4 建立編隊，數字鍵召回；H 回到城鎮中心；小地圖可快速移動視角。</div>
+        <div class="guide-card"><strong>時代與勝利</strong>由黑暗時代依序晉升封建、城堡與帝王時代；城堡能訓練文明獨特兵種。征服敵方、守住奇觀或掌控王旗皆可獲勝，戰局也可匯出 JSON 接續。</div>
+      </div>
+      <button id="closeGuideBtn" class="dialog-btn primary" type="button" style="width:100%">明白，進入戰局</button>
+    </div>
+  </div>
+
+  <div id="endOverlay" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="endTitle">
+    <div class="dialog"><div id="endMedal" class="end-medal">勝</div><h2 id="endTitle">凱旋</h2><div id="endSummary" class="sub"></div><div class="dialog-actions"><button id="endRestartBtn" class="dialog-btn primary" type="button">再戰一局</button><button id="endMenuBtn" class="dialog-btn" type="button">返回主選單</button></div></div>
+  </div>
+  <div id="toast"></div><div id="ariaLive" aria-live="assertive"></div>
+  <img id="materialAtlas" class="hidden" src="assets/isometric-material-atlas.jpg" alt="">
+
+  <script src="js/core-data-audio.js"></script>
+  <script src="js/world.js"></script>
+  <script src="js/simulation.js"></script>
+  <script src="js/generated-art.js"></script>
+  <script src="js/render.js"></script>
+  <script src="js/webgl-effects.js"></script>
+  <script src="js/ui-input.js"></script>
+</body>
+</html>
