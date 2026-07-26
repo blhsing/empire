@@ -841,7 +841,7 @@ public sealed class GameUiRenderer
 
         DrawGuideSection(right, top, "命令與戰鬥", "快速右鍵會依目標移動、採集或攻擊\n攻擊移動會沿途迎戰敵軍\n長槍制騎兵、騎兵制遠程\n弓兵壓長槍、攻城器摧毀建築", UiTheme.Danger);
         DrawGuideSection(right, top + 157, "勝利道路", "摧毀所有敵方城鎮中心\n控制三座王旗並維持霸權\n完成世界奇觀並守住倒數\n文明軍令可在關鍵時刻扭轉戰局", UiTheme.Gold);
-        DrawGuideSection(right, top + 314, "快捷鍵與思路", "WASD／方向鍵移動視角；R 攻擊移動\nX 停止、F 軍令、H 返回城鎮中心\n先偵察敵軍，再生產剋制兵種\n全螢幕模式可獲得更寬廣視野", UiTheme.Cyan);
+        DrawGuideSection(right, top + 314, "快捷鍵與思路", "Shift＋1～4 建立編隊；1～4 召回\nWASD／方向鍵移動視角；R 攻擊移動\nX 停止、F 軍令、H 返回城鎮中心\n全螢幕模式可獲得更寬廣視野", UiTheme.Cyan);
 
         var close = new Rectangle(modal.Center.X - 105, modal.Bottom - 61, 210, 42);
         DrawActionButton(close, "關閉指南", pointer, new UiAction(UiActionId.CloseGuide), true, false, 15, UiTheme.Cyan);

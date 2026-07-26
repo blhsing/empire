@@ -264,7 +264,9 @@ public sealed class GameController
         }
         if (Pressed(Keys.H, keyboard)) CenterOnPlayerTown();
 
-        var control = keyboard.IsKeyDown(Keys.LeftControl) || keyboard.IsKeyDown(Keys.RightControl);
+        var shift = keyboard.IsKeyDown(Keys.LeftShift) || keyboard.IsKeyDown(Keys.RightShift);
+        var reservedModifier = keyboard.IsKeyDown(Keys.LeftControl) || keyboard.IsKeyDown(Keys.RightControl) ||
+                               keyboard.IsKeyDown(Keys.LeftAlt) || keyboard.IsKeyDown(Keys.RightAlt);
         for (var index = 0; index < 4; index++)
         {
             var key = (Keys)((int)Keys.D1 + index);
@@ -272,14 +274,14 @@ public sealed class GameController
             {
                 continue;
             }
-            if (control)
+            if (shift)
             {
                 _groups[index].Clear();
                 _groups[index].AddRange(Engine.State.Selected.Where(id => Engine.Entity(id) is { Dead: false, Faction: 0 }));
                 FlagTutorial("group");
                 Signal(ControllerSignal.CommandIssued, $"已建立編隊 {index + 1}。");
             }
-            else
+            else if (!reservedModifier)
             {
                 SelectIds(_groups[index]);
                 var first = _groups[index].Select(Engine.Entity).FirstOrDefault(entity => entity is { Dead: false });

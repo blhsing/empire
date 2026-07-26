@@ -107,6 +107,7 @@ if (!/for\(const entry of scenery\)[\s\S]{0,500}drawBuilding\(entry\.e\)[\s\S]{0
 if (!joinedJs.includes("const SAVE_KEY='帝國餘燼_戰局_v4'") || !joinedJs.includes('return{v:4') || !joinedJs.includes('LEGACY_CIV_MAP') || !joinedJs.includes("assyrians:'mongols'")) throw new Error('缺少第四版存檔或舊文明名單遷移');
 if (!joinedJs.includes("function ageRequirement") || !joinedJs.includes("farm:['mill']") || !joinedJs.includes("range:['barracks']") || !joinedJs.includes("workshop:['blacksmith']") || !joinedJs.includes("castle:['blacksmith']")) throw new Error('缺少《帝王世紀 II》式時代或建築前置關係');
 if (!html.includes('id="fullscreenBtn"') || !joinedJs.includes('requestFullscreen') || !joinedJs.includes('exitFullscreen')) throw new Error('缺少全螢幕模式');
+if (!/\^Digit\(\[1-4\]\)\$/.test(inputSource) || !inputSource.includes('if(e.shiftKey){controlGroups[n-1]') || inputSource.includes('if(e.ctrlKey){controlGroups[n-1]')) throw new Error('編隊快捷鍵未避開 Chrome 的 Ctrl＋數字分頁切換');
 
 console.log(JSON.stringify({
   result: '通過',
@@ -130,4 +131,5 @@ console.log(JSON.stringify({
   optionalWebGL2Effects: true,
   imagegenAtlases: generatedAssets.length + 1,
   fullscreenMode: true,
+  chromeSafeControlGroups: true,
 }, null, 2));
